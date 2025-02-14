@@ -6,7 +6,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import MarkAttendance from './pages/MarkAttendance'
 import AttendanceCalendar from './pages/AttendanceCalendar'
-import Home from './pages/Home'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -19,7 +18,6 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<AttendanceCalendar />} />
-          <Route path="/home" element={<Home />} />
           <Route path="/mark-attendance" element={<MarkAttendance />} />
         </Route>
       </Route>

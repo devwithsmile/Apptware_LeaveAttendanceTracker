@@ -68,42 +68,42 @@ export const mockAttendance = [
     { id: 23, userId: 6, date: "2025-02-17" },
     { id: 24, userId: 1, date: "2025-02-19" },
     { id: 25, userId: 2, date: "2025-02-19" },
-    { id: 26, userId :3 , date :"2025 -02 -19"},
-    { id :27 ,userId:4 ,date:"2025 -02 -19"},
-    { id:28,userId:1,date:"2025 -02 -21"},
-    {id:29,userId:5,date:"2025 -02 -21"},
+    { id: 26, userId: 3, date: "2025-02-19" },
+    { id: 27, userId: 4, date: "2025-02-19" },
+    { id: 28, userId: 1, date: "2025-02-21" },
+    { id: 29, userId: 5, date: "2025-02-21" },
     
    // Additional attendance records
-   // User ID :1
-   {id:40,userId:1,date:"2025 -02 -01"},
-   {id:41,userId:1,date:"2025 -02 -08"},
-   {id:42,userId:1,date:"2025 -02 -15"},
-   {id:43,userId:1,date:"2025 -02 -22"},
-   {id:44,userId:1,date:"2025 -02 -26"},
+   // User ID: 1
+   { id: 40, userId: 1, date: "2025-02-01" },
+   { id: 41, userId: 1, date: "2025-02-08" },
+   { id: 42, userId: 1, date: "2025-02-15" },
+   { id: 43, userId: 1, date: "2025-02-22" },
+   { id: 44, userId: 1, date: "2025-02-26" },
    
-   // User ID :2
-   {id:45,userId:2,date:"2025 -02 -01"},
-   {id:46,userId:2,date:"2025 -02 -08"},
-   {id:47,userId:2,date:"2025 -02 -15"},
-   {id:48,userId:2,date:"2025 -02 -22"},
-   {id:49,userId:2,date:"2025 -02 -26"},
+   // User ID: 2
+   { id: 45, userId: 2, date: "2025-02-01" },
+   { id: 46, userId: 2, date: "2025-02-08" },
+   { id: 47, userId: 2, date: "2025-02-15" },
+   { id: 48, userId: 2, date: "2025-02-22" },
+   { id: 49, userId: 2, date: "2025-02-26" },
    
-   // User ID :3
-   {id:50,userId:3,date:"2025 -02 -01"},
-   {id:51,userId:3,date:"2025 -02 -08"},
-   {id:52,userId:3,date:"2025 -02 -15"},
-   {id:53,userId:3,date:"2025 -02 -22"},
-   {id:54,userId:3,date:"2025 -02 -26"},
+   // User ID: 3
+   { id: 50, userId: 3, date: "2025-02-01" },
+   { id: 51, userId: 3, date: "2025-02-08" },
+   { id: 52, userId: 3, date: "2025-02-15" },
+   { id: 53, userId: 3, date: "2025-02-22" },
+   { id: 54, userId: 3, date: "2025-02-26" },
    
-   // User ID :4
-   {id:55,userId:4,date:"2025 -02 -01"},
-   {id:56,userId:4,date:"2025 -02 -08"},
-   {id:57,userId:4,date:"2025 -02 -15"},
-   {id:58,userId:4,date:"2025 -02 -22"},
-   {id:59,userId:4,date:"2025 -02 -26"},
+   // User ID: 4
+   { id: 55, userId: 4, date: "2025-02-01" },
+   { id: 56, userId: 4, date: "2025-02-08" },
+   { id: 57, userId: 4, date: "2025-02-15" },
+   { id: 58, userId: 4, date: "2025-02-22" },
+   { id: 59, userId: 4, date: "2025-02-26" },
    
-   // User ID :5
-   {id :60 ,userID :6 ,date :"2017/01/01"}
+   // User ID: 5
+   { id: 60, userId: 5, date: "2017-01-01" }
 ];
 
 
