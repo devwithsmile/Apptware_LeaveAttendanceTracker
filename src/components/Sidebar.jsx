@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
-import { FiHome, FiCalendar, FiClipboard, FiGrid } from 'react-icons/fi'
+import { FiHome, FiClipboard } from 'react-icons/fi'
 
 const Sidebar = () => {
   const menuItems = [
     { path: '/', icon: FiHome, label: 'Home' },
-    { path: '/calendar', icon: FiCalendar, label: 'Calendar' },
     { path: '/mark-attendance', icon: FiClipboard, label: 'Mark Attendance' },
   ]
 

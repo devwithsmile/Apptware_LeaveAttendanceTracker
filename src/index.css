@@ -14,3 +14,51 @@ body {
   min-height: 100vh;
   background-color: #f9fafb;
 }
+
+.react-datepicker {
+  @apply font-sans border-0 shadow-lg !important;
+}
+
+.react-datepicker__header {
+  @apply bg-indigo-50 border-b-0 rounded-t-lg !important;
+}
+
+.react-datepicker__day-name {
+  @apply text-gray-600 font-medium !important;
+}
+
+.react-datepicker__day {
+  @apply rounded-full hover:bg-indigo-100 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700 !important;
+}
+
+/* Override weekend styles in range */
+.react-datepicker__day--weekend.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--weekend.react-datepicker__day--in-range {
+  @apply bg-transparent text-gray-300 hover:bg-transparent !important;
+}
+
+.react-datepicker__day--highlighted {
+  @apply bg-indigo-600 text-white !important;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-300 hover:bg-transparent cursor-not-allowed !important;
+}
+
+.react-datepicker__navigation {
+  @apply top-3 !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  @apply border-gray-600 !important;
+}
+
+.react-datepicker__current-month {
+  @apply text-gray-800 font-semibold !important;
+}

@@ -2,11 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
-import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import Calendar from './pages/Calendar'
 import MarkAttendance from './pages/MarkAttendance'
+import AttendanceCalendar from './pages/AttendanceCalendar'
+import Home from './pages/Home'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -18,8 +18,8 @@ function App() {
       
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/" element={<AttendanceCalendar />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/mark-attendance" element={<MarkAttendance />} />
         </Route>
       </Route>

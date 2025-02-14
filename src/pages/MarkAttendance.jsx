@@ -1,166 +1,267 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'react-hot-toast'
-import moment from 'moment'
+import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Toaster, toast } from 'react-hot-toast';
+import { Calendar, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import "react-datepicker/dist/react-datepicker.css";
 
-const MarkAttendance = () => {
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm()
-  const [isRecurring, setIsRecurring] = useState(false)
+function MarkAttendance() {
+  const [selectedDates, setSelectedDates] = useState([]);
+  const [selectionMode, setSelectionMode] = useState('random'); // 'random' or 'range'
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Function to limit the year input
-  const handleDateInputChange = (e) => {
-    const { name, value } = e.target;
-    // Use regex to allow only numbers and limit year to 4 digits
-    const formattedValue = value.replace(/[^0-9-]/g, '').replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$2-$3');
-
-    setValue(name, formattedValue, { shouldValidate: true }); // Update the form value and trigger validation
+  const isWeekday = (date) => {
+    const day = date.getDay();
+    return day !== 0 && day !== 6;
   };
 
-  useEffect(() => {
-    register('date');
-    register('startDate');
-    register('endDate');
-  }, [register]);
-
-  const onSubmit = async (data) => {
-    try {
-      console.log('Attendance data:', data)
-      toast.success('Attendance marked successfully!')
-      reset()
-    } catch (error) {
-      toast.error('Failed to mark attendance' + error)
+  const handleDateChange = (date) => {
+    if (selectionMode === 'random') {
+      if (selectedDates.length >= 5 && !selectedDates.includes(date)) {
+        toast.error('Maximum 5 dates can be selected');
+        return;
+      }
+      
+      setSelectedDates(prev => {
+        if (prev.some(d => d.getTime() === date.getTime())) {
+          return prev.filter(d => d.getTime() !== date.getTime());
+        }
+        return [...prev, date].sort((a, b) => a - b);
+      });
     }
-  }
+  };
+
+  const handleRangeChange = (update) => {
+    const [start, end] = update;
+    
+    if (!start) {
+      setDateRange([null, null]);
+      return;
+    }
+
+    if (!end) {
+      setDateRange([start, null]);
+      return;
+    }
+
+    // Find the end date that includes exactly 5 weekdays
+    let weekdayCount = 0;
+    let currentDate = new Date(start);
+    let adjustedEndDate = null;
+    
+    while (weekdayCount < 5) {
+      if (isWeekday(currentDate)) {
+        weekdayCount++;
+        if (weekdayCount === 5) {
+          adjustedEndDate = new Date(currentDate);
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    setDateRange([start, adjustedEndDate]);
+  };
+
+  const clearSelections = () => {
+    setSelectedDates([]);
+    setDateRange([null, null]);
+    toast.success('All selections cleared');
+  };
+
+  const handleSubmit = async () => {
+    if (!isValidSelection()) {
+      toast.error('Please make a valid date selection');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Dates submitted successfully!');
+      clearSelections();
+    } catch (error) {
+      toast.error('Failed to submit dates');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isValidSelection = () => {
+    if (selectionMode === 'random') {
+      return selectedDates.length > 0 && selectedDates.length <= 5;
+    }
+    return dateRange[0] && dateRange[1];
+  };
+
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
+  };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Mark Attendance</h1>
-
-      <div className="p-6 bg-white rounded-lg shadow">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">
-              Date Type
-            </label>
-            <div className="flex gap-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  value="single"
-                  checked={!isRecurring}
-                  onChange={() => setIsRecurring(false)}
-                  className="text-indigo-600 form-radio"
-                />
-                <span className="ml-2">Single Date</span>
-              </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  value="recurring"
-                  checked={isRecurring}
-                  onChange={() => setIsRecurring(true)}
-                  className="text-indigo-600 form-radio"
-                />
-                <span className="ml-2">Date Range</span>
-              </label>
-            </div>
-          </div>
-
-          {!isRecurring ? (
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700">
-                Date
-              </label>
-              <input
-                type="date"
-                {...register('date', {
-                  required: 'Date is required',
-                  pattern: {
-                    value: /^\d{4}-\d{2}-\d{2}$/,
-                    message: 'Invalid date format. Use DD-MM-YYYY',
-                  },
-                })}
-                onChange={handleDateInputChange}
-                min={moment().format('DD-MM-YYYY')}
-                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-              {errors.date && (
-                <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  {...register('startDate', {
-                    required: 'Start date is required',
-                    pattern: {
-                      value: /^\d{4}-\d{2}-\d{2}$/,
-                      message: 'Invalid date format. Use DD-MM-YYYY',
-                    },
-                  })}
-                  onChange={handleDateInputChange}
-                  min={moment().format('DD-MM-YYYY')}
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-                {errors.startDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  {...register('endDate', {
-                    required: 'End date is required',
-                    pattern: {
-                      value: /^\d{4}-\d{2}-\d{2}$/,
-                      message: 'Invalid date format. Use DD-MM-YYYY',
-                    },
-                  })}
-                  onChange={handleDateInputChange}
-                  min={moment().format('DD-MM-YYYY')}
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-                {errors.endDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">
-              Comments
-            </label>
-            <textarea
-              {...register('comments')}
-              rows={3}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Add any additional notes..."
-            />
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    <div className="min-h-screen p-4 bg-gradient-to-br from-blue-50 to-indigo-100 sm:p-6 md:p-8">
+      <Toaster position="top-right" />
+      
+      <div className="max-w-3xl p-6 mx-auto bg-white shadow-lg rounded-xl">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+            <Calendar className="w-6 h-6 text-indigo-600" />
+            Date Selector
+          </h1>
+          
+          <div className="flex gap-4">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSelectionMode('random')}
+              className={`px-4 py-2 rounded-lg ${
+                selectionMode === 'random'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              }`}
             >
-              Mark Attendance
-            </button>
+              Random Dates
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSelectionMode('range')}
+              className={`px-4 py-2 rounded-lg ${
+                selectionMode === 'range'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Date Range
+            </motion.button>
           </div>
-        </form>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="date-picker-container">
+            {selectionMode === 'random' ? (
+              <DatePicker
+                selected={null}
+                onChange={handleDateChange}
+                highlightDates={selectedDates}
+                filterDate={isWeekday}
+                inline
+                className="w-full"
+              />
+            ) : (
+              <DatePicker
+                selectsRange={true}
+                startDate={startDate}
+                endDate={endDate}
+                onChange={handleRangeChange}
+                filterDate={isWeekday}
+                inline
+                className="w-full"
+              />
+            )}
+          </div>
+
+          <div className="selected-dates-container">
+            <div className="h-full p-4 rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+                  <CalendarIcon className="w-5 h-5 text-indigo-600" />
+                  Selected Dates
+                </h2>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={clearSelections}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </motion.button>
+              </div>
+
+              <AnimatePresence>
+                {selectionMode === 'random' ? (
+                  <div className="space-y-2">
+                    {selectedDates.map((date, index) => (
+                      <motion.div
+                        key={date.getTime()}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="p-2 bg-white rounded-md shadow-sm"
+                      >
+                        {formatDate(date)}
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {startDate && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-2 bg-white rounded-md shadow-sm"
+                      >
+                        Start: {formatDate(startDate)}
+                      </motion.div>
+                    )}
+                    {endDate && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-2 bg-white rounded-md shadow-sm"
+                      >
+                        End: {formatDate(endDate)}
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-8">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSubmit}
+            disabled={!isValidSelection() || isLoading}
+            className={`px-6 py-2 rounded-lg ${
+              isValidSelection() && !isLoading
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                : 'bg-gray-300 cursor-not-allowed text-gray-500'
+            } transition-colors duration-200`}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              'Submit'
+            )}
+          </motion.button>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default MarkAttendance
+export default MarkAttendance;
