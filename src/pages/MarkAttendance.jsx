@@ -106,10 +106,11 @@ function MarkAttendance() {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-blue-50 to-indigo-100 sm:p-6 md:p-8">
+    <div className="min-h-screen p-4 bg-gradient-to-br  sm:p-6 md:p-1">
+    
       <Toaster position="top-right" />
       
-      <div className="max-w-3xl p-6 mx-auto bg-white shadow-lg rounded-xl">
+      <div className="max-w-6xl p-11 mx-auto bg-white shadow-lg rounded-xl">
         <div className="flex items-center justify-between mb-8">
           <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
             <Calendar className="w-6 h-6 text-indigo-600" />
