@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
 import { Calendar, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import "react-datepicker/dist/react-datepicker.css";
+import "../styles/calendar.css";
 
 function MarkAttendance() {
   const [selectedDates, setSelectedDates] = useState([]);
@@ -23,7 +24,7 @@ function MarkAttendance() {
         toast.error('Maximum 5 dates can be selected');
         return;
       }
-      
+
       setSelectedDates(prev => {
         if (prev.some(d => d.getTime() === date.getTime())) {
           return prev.filter(d => d.getTime() !== date.getTime());
@@ -35,7 +36,7 @@ function MarkAttendance() {
 
   const handleRangeChange = (update) => {
     const [start, end] = update;
-    
+
     if (!start) {
       setDateRange([null, null]);
       return;
@@ -50,7 +51,7 @@ function MarkAttendance() {
     let weekdayCount = 0;
     let currentDate = new Date(start);
     let adjustedEndDate = null;
-    
+
     while (weekdayCount < 5) {
       if (isWeekday(currentDate)) {
         weekdayCount++;
@@ -106,71 +107,72 @@ function MarkAttendance() {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br  sm:p-6 md:p-1">
-    
+    <div className="min-h-screen p-4 bg-gradient-to-br from-indigo-50/30 via-white to-white sm:p-6 md:p-8">
       <Toaster position="top-right" />
-      
-      <div className="max-w-6xl p-11 mx-auto bg-white shadow-lg rounded-xl">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-            <Calendar className="w-6 h-6 text-indigo-600" />
+
+      <div className="max-w-6xl p-8 mx-auto border shadow-lg bg-white/70 backdrop-blur-sm border-gray-100/50 rounded-2xl">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-800">
+            <Calendar className="text-indigo-600 w-7 h-7" />
             Date Selector
           </h1>
-          
-          <div className="flex gap-4">
+
+          <div className="flex gap-2 sm:gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setSelectionMode('random')}
-              className={`px-4 py-2 rounded-lg ${
-                selectionMode === 'random'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg shadow-sm ${selectionMode === 'random'
+                  ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
             >
               Random Dates
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setSelectionMode('range')}
-              className={`px-4 py-2 rounded-lg ${
-                selectionMode === 'range'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg shadow-sm ${selectionMode === 'range'
+                  ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
             >
               Date Range
             </motion.button>
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="date-picker-container">
-            {selectionMode === 'random' ? (
-              <DatePicker
-                selected={null}
-                onChange={handleDateChange}
-                highlightDates={selectedDates}
-                filterDate={isWeekday}
-                inline
-                className="w-full"
-              />
-            ) : (
-              <DatePicker
-                selectsRange={true}
-                startDate={startDate}
-                endDate={endDate}
-                onChange={handleRangeChange}
-                filterDate={isWeekday}
-                inline
-                className="w-full"
-              />
-            )}
+        <div className="grid gap-10 md:grid-cols-2">
+          <div className="h-full pt-2 date-picker-container md:flex md:justify-center md:items-start">
+            <div>
+              {selectionMode === 'random' ? (
+                <DatePicker
+                  selected={null}
+                  onChange={handleDateChange}
+                  highlightDates={selectedDates}
+                  filterDate={isWeekday}
+                  inline
+                  className="w-full"
+                  calendarClassName="!text-lg"
+                />
+              ) : (
+                <DatePicker
+                  selectsRange={true}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={handleRangeChange}
+                  filterDate={isWeekday}
+                  inline
+                  className="w-full"
+                  calendarClassName="!text-lg"
+                />
+              )}
+            </div>
           </div>
 
           <div className="selected-dates-container">
-            <div className="h-full p-4 rounded-lg bg-gray-50">
+            <div className="h-full p-5 rounded-lg shadow-inner bg-gray-50">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+                <h2 className="flex items-center gap-2 text-base font-semibold text-gray-700">
                   <CalendarIcon className="w-5 h-5 text-indigo-600" />
                   Selected Dates
                 </h2>
@@ -192,7 +194,7 @@ function MarkAttendance() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="p-2 bg-white rounded-md shadow-sm"
+                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
                       >
                         {formatDate(date)}
                       </motion.div>
@@ -204,7 +206,7 @@ function MarkAttendance() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-2 bg-white rounded-md shadow-sm"
+                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
                       >
                         Start: {formatDate(startDate)}
                       </motion.div>
@@ -213,7 +215,7 @@ function MarkAttendance() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-2 bg-white rounded-md shadow-sm"
+                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
                       >
                         End: {formatDate(endDate)}
                       </motion.div>
@@ -230,11 +232,10 @@ function MarkAttendance() {
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             disabled={!isValidSelection() || isLoading}
-            className={`px-6 py-2 rounded-lg ${
-              isValidSelection() && !isLoading
+            className={`px-5 py-2.5 text-sm font-medium rounded-lg shadow-md ${isValidSelection() && !isLoading
                 ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                : 'bg-gray-300 cursor-not-allowed text-gray-500'
-            } transition-colors duration-200`}
+                : 'bg-gray-100 cursor-not-allowed text-gray-400'
+              } transition-all duration-200`}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
