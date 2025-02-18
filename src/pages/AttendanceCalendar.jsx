@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockUsers, mockAttendance } from "../lib/mockData";
+import { mockAttendance, mockUsers } from "../lib/mockData";
+import { useSearch } from "../hooks/useSearch";
 
 export default function AttendanceCalendar() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUser, setFilteredUser] = useState(null);
   const [modalData, setModalData] = useState([]);
   const [mockAttendanceData, setMockAttendanceData] = useState(null);
+  const suggestionsRef = useRef(null);
+
+  const {
+    searchQuery,
+    suggestions,
+    selectedUser: filteredUser,
+    isLoading,
+    handleSearchChange,
+    handleSelectUser,
+    handleClearSearch
+  } = useSearch();
 
   const handleDateClick = (date) => {
     const formattedDate = date.toISOString().split("T")[0];
@@ -21,28 +31,29 @@ export default function AttendanceCalendar() {
     setSelectedDate(formattedDate);
   };
 
-  const handleSearch = () => {
-    const user = mockUsers.find(
-      (u) =>
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.id.toString() === searchQuery
-    );
-
-    if (!user) {
-      setFilteredUser(null);
-      setMockAttendanceData(null);
-      return;
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        handleClearSearch();
+      }
     }
 
-    setFilteredUser(user);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [handleClearSearch]);
 
-    // Filter attendance data for the searched user and extract dates
-    const attendanceDates = mockAttendance
-      .filter((att) => att.userId === user.id)
-      .map((att) => att.date.trim()); // Trim to avoid extra spaces
-
-    setMockAttendanceData(attendanceDates);
-  };
+  // Update attendance data when user is selected
+  useEffect(() => {
+    if (filteredUser) {
+      const attendanceDates = mockAttendance
+        .filter((att) => att.userId === filteredUser.id)
+        .map((att) => att.date.trim());
+      setMockAttendanceData(attendanceDates);
+    } else {
+      setMockAttendanceData(null);
+    }
+  }, [filteredUser]);
 
   return (
     <div className="flex flex-col h-full gap-6 p-6 md:flex-row bg-gray-50">
@@ -85,24 +96,60 @@ export default function AttendanceCalendar() {
       {/* Search Panel */}
       <div className="w-full space-y-4 md:w-1/3">
         <div className={`bg-white rounded-xl shadow-md p-6 transition-all ${isSearchFocused ? 'ring-2 ring-indigo-500 ring-opacity-50' : ''}`}>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by ID or Name"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              className="w-full p-3 pr-10 text-sm transition-colors border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500"
-            />
-            <button
-              onClick={handleSearch}
-              className="absolute p-2 text-gray-400 transition-colors transform -translate-y-1/2 right-2 top-1/2 hover:text-indigo-500"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+          <div className="relative" ref={suggestionsRef}>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by ID or Name (min. 2 characters)"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                className="w-full p-3 pr-10 text-sm transition-colors border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500"
+              />
+              {isLoading ? (
+                <div className="absolute transform -translate-y-1/2 right-3 top-1/2">
+                  <div className="w-5 h-5 border-t-2 border-indigo-500 rounded-full animate-spin"></div>
+                </div>
+              ) : searchQuery ? (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute p-2 text-gray-400 transition-colors transform -translate-y-1/2 right-2 top-1/2 hover:text-indigo-500"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              ) : null}
+            </div>
+
+            {/* Search Suggestions */}
+            {suggestions.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="overflow-y-auto max-h-60">
+                  {suggestions.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => handleSelectUser(user)}
+                      className="flex items-center w-full px-4 py-3 text-left transition-colors hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                    >
+                      <div className="flex-shrink-0">
+                        <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full">
+                          <span className="text-sm font-medium text-indigo-600">
+                            {user.name.charAt(0)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">ID: {user.id} • {user.role}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          
           </div>
         </div>
 
