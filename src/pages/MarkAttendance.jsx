@@ -18,6 +18,15 @@ function MarkAttendance() {
     return day !== 0 && day !== 6;
   };
 
+  const handleSelectionModeChange = (mode) => {
+    setSelectionMode(mode);
+    if (mode === 'random') {
+      setDateRange([null, null]);
+    } else if (mode === 'range') {
+      setSelectedDates([]);
+    }
+  };
+
   const handleDateChange = (date) => {
     if (selectionMode === 'random') {
       if (selectedDates.length >= 5 && !selectedDates.includes(date)) {
@@ -107,20 +116,23 @@ function MarkAttendance() {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-indigo-50/30 via-white to-white sm:p-6 md:p-8">
+    <>
       <Toaster position="top-right" />
 
-      <div className="max-w-6xl p-8 mx-auto border shadow-lg bg-white/70 backdrop-blur-sm border-gray-100/50 rounded-2xl">
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-800">
-            <Calendar className="text-indigo-600 w-7 h-7" />
-            Date Selector
-          </h1>
+      <div className="p-8 mx-auto max-w-6xl rounded-2xl border shadow-lg backdrop-blur-sm bg-white/70 border-gray-100/50">
+        <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="flex gap-3 items-center mb-2 text-2xl font-bold text-gray-800">
+              <Calendar className="w-7 h-7 text-indigo-600" />
+              Date Selector
+            </h1>
+            <p className="text-gray-500">Select dates to mark attendance</p>
+          </div>
 
           <div className="flex gap-2 sm:gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectionMode('random')}
+              onClick={() => handleSelectionModeChange('random')}
               className={`px-4 py-2 text-sm font-medium rounded-lg shadow-sm ${selectionMode === 'random'
                   ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -130,7 +142,7 @@ function MarkAttendance() {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectionMode('range')}
+              onClick={() => handleSelectionModeChange('range')}
               className={`px-4 py-2 text-sm font-medium rounded-lg shadow-sm ${selectionMode === 'range'
                   ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -141,18 +153,18 @@ function MarkAttendance() {
           </div>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-2">
-          <div className="h-full pt-2 date-picker-container md:flex md:justify-center md:items-start">
-            <div>
+        <div className="grid gap-12 md:grid-cols-2">
+          <div className="date-picker-container md:flex md:justify-center md:items-start">
+            <div className="w-full max-w-[420px]">
               {selectionMode === 'random' ? (
                 <DatePicker
                   selected={null}
                   onChange={handleDateChange}
+                  inline
                   highlightDates={selectedDates}
                   filterDate={isWeekday}
-                  inline
-                  className="w-full"
-                  calendarClassName="!text-lg"
+                  minDate={new Date()}
+                  dayClassName={date => date.getDay() === 0 || date.getDay() === 6 ? "text-red-500" : undefined}
                 />
               ) : (
                 <DatePicker
@@ -162,17 +174,18 @@ function MarkAttendance() {
                   onChange={handleRangeChange}
                   filterDate={isWeekday}
                   inline
-                  className="w-full"
-                  calendarClassName="!text-lg"
+                  highlightDates={selectedDates}
+                  minDate={new Date()}
+                  dayClassName={date => date.getDay() === 0 || date.getDay() === 6 ? "text-red-500" : undefined}
                 />
               )}
             </div>
           </div>
 
           <div className="selected-dates-container">
-            <div className="h-full p-5 rounded-lg shadow-inner bg-gray-50">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-gray-700">
+            <div className="p-6 h-full rounded-xl border shadow-sm backdrop-blur-sm border-gray-100/70 bg-white/50">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="flex gap-2 items-center text-base font-semibold text-gray-700">
                   <CalendarIcon className="w-5 h-5 text-indigo-600" />
                   Selected Dates
                 </h2>
@@ -184,29 +197,27 @@ function MarkAttendance() {
                   <Trash2 className="w-5 h-5" />
                 </motion.button>
               </div>
-
-              <AnimatePresence>
+              <div className="space-y-2">
                 {selectionMode === 'random' ? (
-                  <div className="space-y-2">
-                    {selectedDates.map((date, index) => (
-                      <motion.div
-                        key={date.getTime()}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
-                      >
-                        {formatDate(date)}
-                      </motion.div>
-                    ))}
-                  </div>
+                  selectedDates.map((date, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-gray-100 rounded-lg shadow-sm hover:shadow transition-all duration-200"
+                    >
+                      {formatDate(date)}
+                    </motion.div>
+                  ))
                 ) : (
-                  <div className="space-y-2">
+                  <>
                     {startDate && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
+                        exit={{ opacity: 0, y: -20 }}
+                        className="px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-gray-100 rounded-lg shadow-sm hover:shadow transition-all duration-200"
                       >
                         Start: {formatDate(startDate)}
                       </motion.div>
@@ -215,14 +226,15 @@ function MarkAttendance() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="px-3 py-2 bg-white border border-gray-100 rounded-md shadow-[0_1px_2px_0_rgb(0,0,0,0.03)]"
+                        exit={{ opacity: 0, y: -20 }}
+                        className="px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-gray-100 rounded-lg shadow-sm hover:shadow transition-all duration-200"
                       >
                         End: {formatDate(endDate)}
                       </motion.div>
                     )}
-                  </div>
+                  </>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
@@ -232,13 +244,13 @@ function MarkAttendance() {
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             disabled={!isValidSelection() || isLoading}
-            className={`px-5 py-2.5 text-sm font-medium rounded-lg shadow-md ${isValidSelection() && !isLoading
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                : 'bg-gray-100 cursor-not-allowed text-gray-400'
+            className={`px-6 py-3 text-sm font-medium rounded-lg shadow-md ${isValidSelection() && !isLoading
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200/50'
+                : 'bg-gray-100/70 backdrop-blur-sm cursor-not-allowed text-gray-400'
               } transition-all duration-200`}
           >
             {isLoading ? (
-              <span className="flex items-center gap-2">
+              <span className="flex gap-2 items-center">
                 <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
@@ -262,7 +274,7 @@ function MarkAttendance() {
           </motion.button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
