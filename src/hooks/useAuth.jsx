@@ -36,13 +36,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post(config.BASE_BACKEND_URL + '/api/login', credentials)
+      const response = await axios.post(config.BASE_BACKEND_URL + '/login', credentials)
       
-      const { token, name } = response.data
-      Cookies.set('token', token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setUser(name) // Now correctly setting user
-      return user
+      const { email } = response.data;
+      console.log("response data " ,response.headers);
+      
+      axios.defaults.withCredentials = true; 
+
+      // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      setUser(email) // Now correctly setting user
+      return email
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Login failed')
     }
@@ -56,6 +59,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      console.log(config.BASE_BACKEND_URL+'/register');
+      
       const response = await axios.post(config.BASE_BACKEND_URL + '/register', userData)
       return response.data
     } catch (error) {

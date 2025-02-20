@@ -9,7 +9,7 @@ const ProtectedRoute = () => {
   }
   // !! THIS IS WRONG , CHANGE LATER
   // TODO: 
-  return isAuthenticated ? <Navigate to="/login" />: <Outlet />
+  return isAuthenticated ?  <Outlet />: <Navigate to="/login" />
 }
 
 export default ProtectedRoute

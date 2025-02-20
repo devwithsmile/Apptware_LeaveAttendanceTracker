@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
-import { mockUsers } from '../lib/mockData';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import axios from 'axios';
+import config from '../utils/config.js';
 
 // Throttle function
 const throttle = (func, limit) => {
@@ -23,7 +24,7 @@ export const useSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Memoize the users data for better performance
-  const users = useMemo(() => mockUsers, []);
+  const users = useMemo(() => [], []);
 
   // Debounced search function
   const debouncedSearch = useCallback((function () {
@@ -106,8 +107,8 @@ export const useSearch = () => {
   const throttledIdSearch = useCallback(
     throttle(async (value) => {
       const results = await searchById(value);
-      setSuggestions(results);
-      if (results.length > 0) {
+      setSuggestions(results || []);
+      if (Array.isArray(results) && results.length > 0) {
         setSelectedUser(results[0]);
       }
       setIsLoading(false);
@@ -132,8 +133,8 @@ export const useSearch = () => {
       if (isIdSearch(value)) {
         // For IDs, perform immediate search
         const results = await searchById(value);
-        setSuggestions([]); // Clear suggestions for ID search
-        if (results.length > 0) {
+        setSuggestions(results || []);
+        if (Array.isArray(results) && results.length > 0) {
           setSelectedUser(results[0]);
         } else {
           setSelectedUser(null);
@@ -141,8 +142,8 @@ export const useSearch = () => {
       } else if (value.length >= 2) {
         // For names, use debouncing and show suggestions
         const results = await debouncedSearch(value);
-        setSuggestions(results);
-        if (results.length === 0) {
+        setSuggestions(results || []);
+        if (Array.isArray(results) && results.length === 0) {
           setSelectedUser(null);
         }
       } else {
@@ -170,6 +171,41 @@ export const useSearch = () => {
     setSuggestions([]);
     setSelectedUser(null);
   }, []);
+
+  const fetchSearchResults = useCallback(async (query) => {
+    try {
+      let response;
+      if (isIdSearch(query)) {
+        // Direct ID lookup
+        response = await axios.get(`${config.BASE_BACKEND_URL}/employee`, {
+          params: { id: query },
+        });
+      } else {
+        response = await axios.get(`${config.BASE_BACKEND_URL}/employee/search`, {
+          data: { name: query },
+        });
+      }
+
+      return response.data;
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+      return [];
+    }
+  }, [isIdSearch]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchSearchResults(searchQuery).then((results) => {
+        setSuggestions(results || []);
+        if (Array.isArray(results) && results.length > 0) {
+          setSelectedUser(results[0]);
+        }
+        setIsLoading(false);
+      });
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, fetchSearchResults]);
 
   return {
     searchQuery,
